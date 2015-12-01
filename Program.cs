@@ -1,13 +1,53 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Timers;
 
 using RussianRailwaysUtility.Utils;
 using RussianRailwaysUtility.Entities;
 
 namespace RussianRailwaysUtility {
     class Program {
+
+        private const int TIMER_DELAY = 60;// минут
         static void Main(string[] args) {
+            try {
+                Timer timer = new Timer(TIMER_DELAY * 1000 * 60);
+                timer.AutoReset = true;
+                timer.Elapsed += OnTimerTick;
+
+                string choice = "";
+                do {
+                    Console.WriteLine("\n=======================================");
+                    Console.WriteLine("СТАТУС: таймер " + ((timer.Enabled) ? "запущен" : "остановлен"));
+                    Console.WriteLine("=======================================");
+                    Console.WriteLine("exit - для выхода");
+                    Console.WriteLine("start/stop - для старта/остановки таймера");
+                    Console.WriteLine();
+                    choice = Console.ReadLine();
+
+                    if (choice.Equals("start", StringComparison.OrdinalIgnoreCase)) {
+                        timer.Start();
+                        Console.WriteLine("Таймер запущен!");
+                    } else if (choice.Equals("stop", StringComparison.OrdinalIgnoreCase)) {
+                        timer.Stop();
+                        Console.WriteLine("Таймер остановлен!");
+                    }
+
+                } while (!choice.Equals("exit", StringComparison.OrdinalIgnoreCase));
+            }
+            catch (Exception ex) {
+                ConsoleColor oldColor = Console.ForegroundColor;
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("[ЕГГОР] Возникло исключение! Описание: " + ex.Message);
+                Console.WriteLine("StackTrace:\n" + ex.StackTrace);
+                Console.ForegroundColor = oldColor;
+            }
+            Console.WriteLine("Для выхода нажмите любую клавишу...");
+            Console.ReadKey(false);
+        }
+
+        private static void OnTimerTick(object src, ElapsedEventArgs args) {
             try {
                 ResponseObject robj = RzdUtility.AskSite();
                 Console.WriteLine(PrintResults(robj));
@@ -19,8 +59,6 @@ namespace RussianRailwaysUtility {
                 Console.WriteLine("StackTrace:\n" + ex.StackTrace);
                 Console.ForegroundColor = oldColor;
             }
-            Console.WriteLine("Для выхода нажмите любую клавишу...");
-            Console.ReadKey(false);
         }
 
         private static string PrintResults(ResponseObject obj) {
